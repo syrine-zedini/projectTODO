@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Projet – To-Do App (1 page)</title>
+  <style>
+    /* --- Reset & base --- */
+    * { box-sizing: border-box; }
+    :root{
+      --bg:#0f172a;        /* slate-900 */
+      --card:#111827;      /* gray-900 */
+      --muted:#94a3b8;     /* slate-400 */
+      --text:#e5e7eb;      /* gray-200 */
+      --accent:#22c55e;    /* emerald-500 */
+      --danger:#ef4444;    /* red-500 */
+      --ring:#3b82f6;      /* blue-500 */
+    }
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, #0b1229, var(--bg));
+      color: var(--text);
+      min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .app{
+      width:100%; max-width:900px; background:linear-gradient(180deg, #0c1220, #0c1326);
+      border:1px solid #1f2937; border-radius:18px; padding:22px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    /* --- Header --- */
+    .header{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .title{ font-weight:800; letter-spacing:.5px; font-size:clamp(20px, 2.6vw, 28px); display:flex; align-items:center; gap:10px}
+    .title .dot{ width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px var(--accent); }
+
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; }
+    .search, .filter, .theme{
+      background:#0b1020; border:1px solid #243042; color:var(--text);
+      padding:10px 12px; border-radius:12px; outline:none;
+    }
+    .search{ min-width:220px }
+    .theme{ cursor:pointer }
+
+    /* --- Message d'accueil --- */
+    .welcome-msg{
+      margin:14px 0; padding:12px 16px; background:#1f2937; border-radius:12px;
+      text-align:center; color:#22c55e; font-weight:600;
+      box-shadow:0 4px 12px rgba(0,0,0,.2);
+      animation: fadeIn 0.7s ease;
+    }
+
+    @keyframes fadeIn{
+      from{ opacity:0; transform:translateY(-10px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+
+    /* --- New task form --- */
+    form#new-task{ display:flex; gap:10px; margin:18px 0 14px }
+    input[type="text"], input[type="datetime-local"]{
+      background:#0b1020; border:1px solid #243042; color:var(--text);
+      padding:12px 14px; border-radius:12px; outline:none; width:100%;
+    }
+    input[type="text"]:focus, input[type="datetime-local"]:focus{ border-color:var(--ring); box-shadow:0 0 0 3px #3b82f61f; }
+    button{
+      border:none; border-radius:12px; cursor:pointer; padding:12px 14px; font-weight:600;
+    }
+    .btn-add{ background:var(--accent); color:#062b17; }
+    .btn-clear{ background:#1f2937; color:var(--muted); }
+    .btn-clear:hover{ color:#fff }
+
+    /* --- Task list --- */
+    .list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:12px; margin-top:6px }
+    .card{
+      background:var(--card); border:1px solid #1f2937; border-radius:16px; padding:14px; display:flex; gap:12px; align-items:flex-start;
+      transition: transform .15s ease, border-color .15s ease;
+    }
+    .card:hover{ transform: translateY(-2px); border-color:#334155; }
+    .checkbox{ margin-top:4px }
+    .content{ flex:1 }
+    .name{ font-weight:700; margin:0 0 6px; line-height:1.3 }
+    .meta{ font-size:12px; color:var(--muted); display:flex; gap:10px; flex-wrap:wrap }
+    .tags{ display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 }
+    .tag{ font-size:11px; border:1px solid #1f2937; padding:4px 8px; border-radius:999px; background:#0b1020 }
+    .actions{ display:flex; gap:8px; }
+    .icon-btn{
+      background:#0b1020; border:1px solid #243042; color:var(--text); padding:8px 10px; border-radius:10px;
+    }
+    .icon-btn:hover{ border-color:#334155 }
+    .done .name{ text-decoration: line-through; color:#94a3b8 }
+    .empty{ text-align:center; padding:26px; color:var(--muted); border:1px dashed #243042; border-radius:16px }
+
+    /* --- Footer --- */
+    .footer{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap; color:var(--muted) }
+    .counter strong{ color:#fff }
+    .links{ display:flex; gap:10px; flex-wrap:wrap }
+    .links a{ color:var(--muted); text-decoration:none; border:1px solid #243042; padding:8px 12px; border-radius:10px }
+    .links a:hover{ color:#fff; border-color:#334155 }
+
+    /* Light theme */
+    .light{
+      --bg:#f1f5f9;
+      --card:#ffffff;
+      --text:#0b1020;
+      --muted:#475569;
+      --accent:#16a34a;
+      --danger:#dc2626;
+      --ring:#2563eb;
+      background: linear-gradient(180deg, #eef2ff, var(--bg));
+    }
+    .light .btn-clear{ background:#e5e7eb; color:#334155 }
+    .light .icon-btn{ background:#f8fafc }
+    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="header">
+      <div class="title"><span class="dot" aria-hidden="true"></span> To-Do App (1 page)</div>
+      <div class="controls">
+        <input id="search" class="search" type="search" placeholder="Rechercher une tâche…" aria-label="Rechercher une tâche">
+        <select id="filter" class="filter" aria-label="Filtrer">
+          <option value="all">Toutes</option>
+          <option value="active">Actives</option>
+          <option value="done">Terminées</option>
+          <option value="due">Avec échéance</option>
+        </select>
+        <button id="theme" class="theme" title="Basculer thème">🌗 Thème</button>
+      </div>
+    </header>
+
+    <!-- Message d'accueil -->
+    <div class="welcome-msg">
+      Bonjour ! C'est quoi le nouveau pour aujourd'hui ? 🌟
+    </div>
+
+    <form id="new-task" autocomplete="off">
+      <label class="sr-only" for="task-name">Nom</label>
+      <input id="task-name" type="text" placeholder="Ajouter une tâche (ex: Réviser Git)..." required minlength="2" />
+      <label class="sr-only" for="task-due">Échéance</label>
+      <input id="task-due" type="datetime-local" />
+      <button class="btn-add" type="submit">+ Ajouter</button>
+      <button class="btn-clear" type="button" id="clear-done">Effacer terminées</button>
+    </form>
+
+    <section id="list" class="list" aria-live="polite"></section>
+    <div id="empty" class="empty" hidden>Aucune tâche. Ajoute ta première au dessus 👆</div>
+
+    <footer class="footer">
+      <div class="counter"><strong id="count">0</strong> tâche(s) • <span id="count-done">0</span> terminée(s)</div>
+      <div class="links">
+        <a href="#" id="export">Exporter JSON</a>
+        <a href="#" id="import">Importer JSON</a>
+        <a href="#" id="reset">Réinitialiser</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const KEY = "mini_todo_tasks_v1";
+    const THEME_KEY = "mini_todo_theme";
+    const $ = (q, el=document) => el.querySelector(q);
+
+    const state = { tasks: [], filter: 'all', search: '' };
+
+    function save(){ localStorage.setItem(KEY, JSON.stringify(state.tasks)); }
+    function load(){
+      try{ state.tasks = JSON.parse(localStorage.getItem(KEY)) ?? []; }
+      catch{ state.tasks = []; }
+    }
+    function saveTheme(){ localStorage.setItem(THEME_KEY, document.body.classList.contains('light') ? 'light':'dark'); }
+    function loadTheme(){ if(localStorage.getItem(THEME_KEY) === 'light') document.body.classList.add('light'); }
+
+    function h(tag, attrs={}, ...children){
+      const el = document.createElement(tag);
+      Object.entries(attrs).forEach(([k,v])=>{
+        if(k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+        else if(v !== false && v != null) el.setAttribute(k, v === true ? '' : v);
+      });
+      children.flat().forEach(c => el.appendChild(c.nodeType ? c : document.createTextNode(c)));
+      return el;
+    }
+
+    function formatDue(d){
+      if(!d) return "Sans échéance";
+      const date = new Date(d);
+      return Number.isNaN(+date) ? "Échéance invalide" : date.toLocaleString();
+    }
+
+    function render(){
+      const list = $('#list');
+      list.innerHTML = '';
+
+      let items = [...state.tasks];
+      const q = state.search.trim().toLowerCase();
+      if(q) items = items.filter(t => t.name.toLowerCase().includes(q));
+      if(state.filter==='active') items = items.filter(t=>!t.done);
+      if(state.filter==='done') items = items.filter(t=>t.done);
+      if(state.filter==='due') items = items.filter(t=>!!t.due);
+
+      $('#empty').hidden = items.length!==0;
+      $('#count').textContent = state.tasks.length;
+      $('#count-done').textContent = state.tasks.filter(t=>t.done).length;
+
+      items.forEach(t=>{
+        const card = h('article', { class:'card'+(t.done?' done':''), 'data-id':t.id });
+        const checkbox = h('input',{type:'checkbox',class:'checkbox',checked:t.done,onChange:()=>toggle(t.id)});
+        const content = h('div',{class:'content'},
+          h('h3',{class:'name'}, t.name),
+          h('div',{class:'tags'}, ...(t.tags||[]).map(tag=>h('span',{class:'tag'}, `#${tag}`))),
+          h('div',{class:'meta'}, h('span',{}, formatDue(t.due)), h('span',{}, t.created?('Créée: '+new Date(t.created).toLocaleString()):''))
+        );
+        const actions = h('div',{class:'actions'},
+          h('button',{class:'icon-btn',title:'Renommer',onClick:()=>renameTask(t.id)},'✏️'),
+          h('button',{class:'icon-btn',title:'Marquer important',onClick:()=>toggleTag(t.id,'important')},'⭐'),
+          h('button',{class:'icon-btn',title:'Supprimer',onClick:()=>remove(t.id)},'🗑️')
+        );
+        card.append(checkbox, content, actions);
+        list.append(card);
+      });
+      save();
+    }
+
+    function add(name, due){ state.tasks.push({ id: crypto.randomUUID(), name, due: due||'', done:false, tags:[], created:Date.now() }); render(); }
+    function remove(id){ state.tasks = state.tasks.filter(t=>t.id!==id); render(); }
+    function toggle(id){ const t = state.tasks.find(x=>x.id===id); if(t){ t.done=!t.done; render(); } }
+    function renameTask(id){ const t=state.tasks.find(x=>x.id===id); if(t){ const name=prompt("Nouveau nom :",t.name); if(name&&name.trim().length>=2){ t.name=name.trim(); render(); } } }
+    function toggleTag(id, tag){ const t=state.tasks.find(x=>x.id===id); if(t){ const i=t.tags.indexOf(tag); if(i>=0) t.tags.splice(i,1); else t.tags.push(tag); render(); } }
+    function clearDone(){ state.tasks=state.tasks.filter(t=>!t.done); render(); }
+    function resetAll(){ if(confirm("Tout réinitialiser ?")){ state.tasks=[]; render(); } }
+
+    function exportJson(){ const blob=new Blob([JSON.stringify(state.tasks,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='todo_export.json'; a.click(); URL.revokeObjectURL(a.href); }
+    function importJson(){ const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.onchange=()=>{ const file=input.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=e=>{ try{ const data=JSON.parse(e.target.result); if(Array.isArray(data)){ state.tasks=data; render(); } else alert("Fichier invalide"); } catch{ alert("JSON invalide"); } }; reader.readAsText(file); }; input.click(); }
+
+    $('#new-task').addEventListener('submit', e=>{ e.preventDefault(); const name=$('#task-name').value.trim(); if(name.length<2){ alert("La tâche doit contenir au moins 2 caractères."); return; } add(name,$('#task-due').value); $('#task-name').value=''; $('#task-due').value=''; $('#task-name').focus(); });
+    $('#clear-done').addEventListener('click', clearDone);
+    $('#filter').addEventListener('change', e=>{ state.filter=e.target.value; render(); });
+    $('#search').addEventListener('input', e=>{ state.search=e.target.value; render(); });
+    $('#reset').addEventListener('click', e=>{ e.preventDefault(); resetAll(); });
+    $('#export').addEventListener('click', e=>{ e.preventDefault(); exportJson(); });
+    $('#import').addEventListener('click', e=>{ e.preventDefault(); importJson(); });
+    $('#theme').addEventListener('click', ()=>{ document.body.classList.toggle('light'); saveTheme(); });
+
+    load(); loadTheme(); render();
+    if(state.tasks.length===0){
+      add("Réviser Git : init, commit, branch","");
+      add("Créer un mini projet HTML/CSS/JS","");
+      add("Lire 20 min (échéance)", new Date(Date.now()+3600_000).toISOString().slice(0,16));
+    }
+  </script>
+</body>
+</html>
